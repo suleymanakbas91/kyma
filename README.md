@@ -41,3 +41,5 @@ Learn how to use Kyma and test the available examples.
 ### Examples
 
 Kyma comes with the ready-to-use code snippets that you can use to test the extensions and the core functionality. See the list of existing examples in the [`examples`](https://github.com/kyma-project/examples) repository.
+
+Test
