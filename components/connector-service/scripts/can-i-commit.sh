@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+test
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 INVERTED='\033[7m'
