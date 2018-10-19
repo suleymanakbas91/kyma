@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+test
 # set -o errexit
 
 kubectl delete installation/kyma-installation
