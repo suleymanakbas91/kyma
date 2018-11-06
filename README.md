@@ -16,7 +16,7 @@ Install Kyma [locally](https://kyma-project.io/docs/root/kyma#getting-started-lo
 
 ## Usage
 
-Kyma comes with the ready-to-use code snippets that you can use to test the extensions and the core functionality. See the list of existing examples in the [`examples`](https://github.com/kyma-project/examples) repository.
+Kyma comes with the ready-to-use code snippets that you can use to test the extensions and the core functionality. See the list of existing examples in the [`examples`](https://github.com/kyma-project/examples) repository.  
 
 ## Development
 
