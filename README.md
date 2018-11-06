@@ -46,7 +46,7 @@ $ cd components/ui-api-layer
 $ dep ensure -vendor-only
 ```
 
-4. Build the project.
+4. Build the project.  
 
 Every project runs differently. Follow instructions in the main `README.md` document of the given project to build it.
 
