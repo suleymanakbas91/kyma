@@ -4,6 +4,8 @@
 # Following script installs necessary tooling for Debian, deploys Kyma on Minikube, and runs integrations tests. 
 #
 
+set -o errexit
+
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=${CURRENT_DIR}/../../
 
