@@ -1,5 +1,6 @@
 FROM ubuntu:16.04
 
+
 LABEL source="git@github.com:kyma-project/kyma.git"
 
 ARG KUBECTL_CLI_VERSION
