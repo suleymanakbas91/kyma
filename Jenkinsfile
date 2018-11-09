@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+#test
 
 def label = "kyma-${UUID.randomUUID().toString()}"
 def commit_id=''
