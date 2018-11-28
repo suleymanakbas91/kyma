@@ -1,11 +1,9 @@
 APP_NAME = istio-kyma-patch
 IMG = $(DOCKER_PUSH_REPOSITORY)$(DOCKER_PUSH_DIRECTORY)/$(APP_NAME)
 TAG = $(DOCKER_TAG)
-binary=$(APP_NAME)
 
 .PHONY: build-image
 build-image:
-	cp $(binary) deploy/controller/$(binary)
 	docker build -t $(APP_NAME):latest deploy/controller
 
 .PHONY: push-image
