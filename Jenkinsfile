@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-
+test
 def label = "kyma-${UUID.randomUUID().toString()}"
 def commit_id=''
 def isMaster = params.GIT_BRANCH == 'master'
