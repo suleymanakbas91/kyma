@@ -1,5 +1,5 @@
 # Acceptance Tests
-
+test
 ## Overview
 
 This project contains the acceptance tests that you can run as part of Kyma testing process.
