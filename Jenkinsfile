@@ -3,7 +3,7 @@
 def label = "kyma-${UUID.randomUUID().toString()}"
 def commit_id=''
 def isMaster = params.GIT_BRANCH == 'master'
-
+test
 echo """
 ********************************
 Job started with the following parameters:
