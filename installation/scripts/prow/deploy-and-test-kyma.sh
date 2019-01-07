@@ -12,4 +12,5 @@ INSTALLATION_DIR=${CURRENT_DIR}/../../
 
 sudo ${INSTALLATION_DIR}/cmd/run.sh --vm-driver "none"
 sudo ${SCRIPTS_DIR}/is-installed.sh
+sudo ${SCRIPTS_DIR}/watch-pods.sh
 sudo ${SCRIPTS_DIR}/testing.sh
