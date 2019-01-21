@@ -1,5 +1,5 @@
 apiVersion: v1
-kind: Secret
+kind: Secrettest
 metadata:
   name: azure-blobstore-secret
   namespace: kyma-installer
