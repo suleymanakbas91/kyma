@@ -1,7 +1,7 @@
 APP_NAME = application-gateway
 IMG = $(DOCKER_PUSH_REPOSITORY)$(DOCKER_PUSH_DIRECTORY)/$(APP_NAME)
 TAG = $(DOCKER_TAG)
-
+#hey
 .PHONY: build
 build:
 	./before-commit.sh ci
