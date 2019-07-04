@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:56132f4a7b39c2f6d4c0a9ebf22382fb3f0b8bec5df4693a3eefccfe06811bd8"
+  digest = "1:09e0fd73b1f84985c996352847dda3c4459c439083eac875de5cb734097903cf"
   name = "github.com/alecthomas/gometalinter"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "17a7ffa42374937bfecabfb8d2efbd4db0c26741"
-  version = "v2.0.11"
+  revision = "df395bfa67c5d0630d936c0044cf07ff05086655"
+  version = "v3.0.0"
 
 [[projects]]
   branch = "master"
@@ -68,11 +68,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b761585c2e408cae852f14ab9c9b23d194fafc6b191e0936e9ddd4c5802b65e8"
+  digest = "1:c54b2df9eb45e238bca9d7f0e1a4acc90a2e6284e8d31c0df3ec72886ec53406"
   name = "github.com/google/shlex"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "6f45313302b9c56850fc17f99e40caebce98c716"
+  revision = "c34317bd91bf98fab745d77b03933cf8769299fe"
 
 [[projects]]
   branch = "master"
@@ -179,7 +179,7 @@
   version = "1.0.1"
 
 [[projects]]
-  digest = "1:07140002dbf37da92090f731b46fa47be4820b82fe5c14a035203b0e813d0ec2"
+  digest = "1:7157fd3f337f20f9058789e47f3341ae5cb77081fa01c1d678af5a03afea6f3e"
   name = "github.com/nicksnyder/go-i18n"
   packages = [
     "i18n",
@@ -188,8 +188,8 @@
     "i18n/translation",
   ]
   pruneopts = "NUT"
-  revision = "0dc1626d56435e9d605a29875701721c54bc9bbd"
-  version = "v1.10.0"
+  revision = "3c6ee9071cf061f4b0101e14412f74d6e7a8ada6"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:3b517122f3aad1ecce45a630ea912b3092b4729f25532a911d0cb2935a1f9352"
@@ -200,12 +200,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:51ea800cff51752ff68e12e04106f5887b4daec6f9356721238c28019f0b42db"
+  digest = "1:4e9827f31d4fc1ddd732a0e3af4e863d281dd405adb2bfb96a25cc5346a77caf"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
-  version = "v1.2.0"
+  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -319,17 +319,24 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:322def9a6861aa249e84562ddb4298483b7ed463638501715b69df70c2ab42de"
+  digest = "1:f1a0515f0a4183804d0ee2872ccc0ff022c57d81aa78c38a81f6987c38568dfd"
   name = "golang.org/x/tools"
   packages = [
     "cmd/goimports",
     "go/ast/astutil",
-    "imports",
+    "go/gcexportdata",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
     "internal/fastwalk",
     "internal/gopathwalk",
+    "internal/imports",
+    "internal/module",
+    "internal/semver",
   ]
   pruneopts = "NUT"
-  revision = "96e9e165b75e735822645eff82850b08c377be36"
+  revision = "2214986f1668163f6c7315bcfa4a6496af4c3829"
 
 [[projects]]
   digest = "1:f229c599a645bffd97518107ac89955adfa6d5e5e4efa3e8cadb29789219639f"
