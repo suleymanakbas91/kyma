@@ -31,7 +31,6 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	prometheusClient "github.com/coreos/prometheus-operator/pkg/client/versioned"
 	"github.com/sirupsen/logrus"
 
@@ -43,18 +42,14 @@ import (
 )
 
 const (
-	domain                    = "http://monitoring-prometheus.kyma-system"
-	prometheusNS              = "kyma-system"
-	api                       = "/api/v1/query?"
-	metricsQuery              = "max(sum(kube_pod_container_resource_requests_cpu_cores) by (instance))"
-	port                      = "9090"
-	metricName                = "kube_pod_container_resource_requests_cpu_cores"
-	prometheusName            = "monitoring"
-	prometheusPodName         = "prometheus-monitoring-0"
-	prometheusServiceName     = "monitoring-prometheus"
-	prometheusStatefulsetName = "prometheus-monitoring"
-	prometheusPvcName         = "prometheus-monitoring-db-prometheus-monitoring-0"
-	prometheusLabelSelector   = "app=prometheus"
+	domain            = "http://monitoring-prometheus.kyma-system"
+	prometheusNS      = "kyma-system"
+	api               = "/api/v1/query?"
+	metricsQuery      = "max(sum(kube_pod_container_resource_requests_cpu_cores) by (instance))"
+	port              = "9090"
+	metricName        = "kube_pod_container_resource_requests_cpu_cores"
+	prometheusName    = "monitoring"
+	prometheusPodName = "prometheus-monitoring-0"
 )
 
 type queryResponse struct {
@@ -77,7 +72,6 @@ type prometheusTest struct {
 	coreClient       *kubernetes.Clientset
 	prometheusClient *prometheusClient.Clientset
 	response         queryResponse
-	beforeBackup     bool
 	expectedResult   string
 	finalResult      string
 	apiQuery
@@ -98,8 +92,6 @@ type apiQuery struct {
 	metricQuery  string
 	port         string
 }
-
-var backedupPrometheus *v1.Prometheus
 
 func NewPrometheusTest() (*prometheusTest, error) {
 	restConfig, err := config.NewRestClientConfig()
@@ -124,9 +116,79 @@ func NewPrometheusTest() (*prometheusTest, error) {
 		prometheusClient: pClient,
 		metricName:       metricName,
 		apiQuery:         queryToApi,
-		beforeBackup:     true,
 		log:              logrus.WithField("test", "prometheus"),
 	}, nil
+}
+
+func (pt *prometheusTest) CreateResources(namespace string) {
+	qresp := &queryResponse{}
+	err := qresp.connectToPrometheusApi(pt.domain, pt.port, pt.api, pt.metricQuery, "")
+	So(err, ShouldBeNil)
+
+	pt.response = *qresp
+	point := pointInTime{}
+	if len(qresp.Data.Result) > 0 && len(qresp.Data.Result[0].Value) > 0 {
+		values := qresp.Data.Result[0].Value
+		for _, something := range values {
+
+			f, s, err := whatIsThisThing(something)
+			So(err, ShouldBeNil)
+
+			if f != float64(0) {
+				point.pointInTime(f)
+				pt.pointInTime = point
+			}
+
+			if s != "" {
+				pt.expectedResult = s
+			}
+		}
+
+	}
+
+}
+
+func (pt *prometheusTest) TestResources(namespace string) {
+	err := pt.waitForPodPrometheus(10 * time.Minute)
+	So(err, ShouldBeNil)
+	qresp := &queryResponse{}
+
+	timeout := time.After(2 * time.Minute)
+	tick := time.Tick(2 * time.Second)
+	timedout := false
+	done := false
+	for {
+		select {
+		case <-timeout:
+			timedout = true
+			pt.log.Infof("Timedout: while hitting Prometheus API: %v", err)
+		case <-tick:
+			err = qresp.connectToPrometheusApi(pt.domain, pt.port, pt.api, pt.metricQuery, pt.pointInTime.formmattedValue)
+			if err == nil {
+				done = true
+			}
+		}
+
+		if done || timedout {
+			break
+		}
+	}
+
+	So(err, ShouldBeNil)
+
+	if len(qresp.Data.Result) > 0 && len(qresp.Data.Result[0].Value) > 0 {
+		values := qresp.Data.Result[0].Value
+		for _, something := range values {
+
+			_, s, err := whatIsThisThing(something)
+			So(err, ShouldBeNil)
+			if s != "" {
+				pt.finalResult = s
+			}
+		}
+	}
+
+	So(strings.TrimSpace(pt.finalResult), ShouldEqual, strings.TrimSpace(pt.expectedResult))
 }
 
 func (point *pointInTime) pointInTime(f float64) {
@@ -193,89 +255,6 @@ func (qresp *queryResponse) decodeQueryResponse(jresponse []byte) error {
 	return nil
 }
 
-func (pt *prometheusTest) CreateResources(namespace string) {
-	qresp := &queryResponse{}
-	err := qresp.connectToPrometheusApi(pt.domain, pt.port, pt.api, pt.metricQuery, "")
-	So(err, ShouldBeNil)
-
-	pt.response = *qresp
-	point := pointInTime{}
-	if len(qresp.Data.Result) > 0 && len(qresp.Data.Result[0].Value) > 0 {
-		values := qresp.Data.Result[0].Value
-		for _, something := range values {
-
-			f, s, err := whatIsThisThing(something)
-			So(err, ShouldBeNil)
-
-			if f != float64(0) {
-				point.pointInTime(f)
-				pt.pointInTime = point
-			}
-
-			if s != "" {
-				pt.expectedResult = s
-			}
-		}
-
-	}
-
-}
-
-func (pt *prometheusTest) TestResources(namespace string) {
-	if !pt.beforeBackup {
-		err := pt.deletePrometheus(prometheusNS, prometheusName)
-		So(err, ShouldBeNil)
-
-		err = pt.deletePod(prometheusNS, prometheusPodName, prometheusLabelSelector)
-		So(err, ShouldBeNil)
-
-		err = pt.createPrometheusFromSavedResource()
-		So(err, ShouldBeNil)
-	}
-
-	pt.beforeBackup = false
-	err := pt.waitForPodPrometheus(10 * time.Minute)
-	So(err, ShouldBeNil)
-	qresp := &queryResponse{}
-
-	timeout := time.After(2 * time.Minute)
-	tick := time.Tick(2 * time.Second)
-	timedout := false
-	done := false
-	for {
-		select {
-		case <-timeout:
-			timedout = true
-			pt.log.Infof("Timedout: while hitting Prometheus API: %v", err)
-		case <-tick:
-			err = qresp.connectToPrometheusApi(pt.domain, pt.port, pt.api, pt.metricQuery, pt.pointInTime.formmattedValue)
-			if err == nil {
-				done = true
-			}
-		}
-
-		if done || timedout {
-			break
-		}
-	}
-
-	So(err, ShouldBeNil)
-
-	if len(qresp.Data.Result) > 0 && len(qresp.Data.Result[0].Value) > 0 {
-		values := qresp.Data.Result[0].Value
-		for _, something := range values {
-
-			_, s, err := whatIsThisThing(something)
-			So(err, ShouldBeNil)
-			if s != "" {
-				pt.finalResult = s
-			}
-		}
-	}
-
-	So(strings.TrimSpace(pt.finalResult), ShouldEqual, strings.TrimSpace(pt.expectedResult))
-}
-
 func (pt *prometheusTest) waitForPodPrometheus(waitmax time.Duration) error {
 	timeout := time.After(waitmax)
 	tick := time.Tick(2 * time.Second)
@@ -314,87 +293,4 @@ func (pt *prometheusTest) waitForPodPrometheus(waitmax time.Duration) error {
 			}
 		}
 	}
-}
-
-func (pt *prometheusTest) savePrometheusResource(namespace, name string) error {
-	backedupPrometheusLocal, err := pt.prometheusClient.MonitoringV1().Prometheuses(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	backedupPrometheus = backedupPrometheusLocal
-	return nil
-}
-
-func (pt *prometheusTest) createPrometheusFromSavedResource() error {
-	backedupPrometheus.ObjectMeta.ResourceVersion = ""
-	backedupPrometheus.Status = nil
-	backedupPrometheus.Generation = 0
-	prometheusAnnotations := backedupPrometheus.Annotations
-	backedupPrometheus.ObjectMeta = metav1.ObjectMeta{
-		Annotations:       prometheusAnnotations,
-		Name:              backedupPrometheus.Name,
-		Labels:            backedupPrometheus.Labels,
-		Namespace:         backedupPrometheus.Namespace,
-		CreationTimestamp: backedupPrometheus.CreationTimestamp,
-	}
-	podAnnotations := backedupPrometheus.Spec.PodMetadata.Annotations
-	backedupPrometheus.Spec.PodMetadata = &metav1.ObjectMeta{
-		Annotations:       podAnnotations,
-		CreationTimestamp: backedupPrometheus.CreationTimestamp,
-	}
-	backedupPrometheus.Spec.Storage.VolumeClaimTemplate.ObjectMeta = metav1.ObjectMeta{
-		CreationTimestamp: backedupPrometheus.CreationTimestamp,
-	}
-
-	for {
-		_, err := pt.prometheusClient.MonitoringV1().Prometheuses(backedupPrometheus.Namespace).Get(backedupPrometheus.Name, metav1.GetOptions{})
-		if err != nil && strings.Contains(err.Error(), "not found") {
-			break
-		}
-	}
-	_, err := pt.prometheusClient.MonitoringV1().Prometheuses(backedupPrometheus.ObjectMeta.Namespace).Create(backedupPrometheus)
-
-	if err != nil {
-		pt.log.Errorf("Error while creating Prometheus CR created from saved resource: %v", err)
-		return err
-	}
-	pt.log.Infoln("Prometheus CR created from saved resource!")
-	return nil
-}
-
-func (pt *prometheusTest) deletePrometheus(namespace, name string) error {
-	pt.savePrometheusResource(namespace, name)
-	deletePolicy := metav1.DeletePropagationForeground
-	err := pt.prometheusClient.MonitoringV1().Prometheuses(namespace).Delete(name, &metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	})
-	if err != nil {
-		pt.log.Errorf("Error while deleting Prometheus CR: %v", err)
-		return err
-	}
-
-	pt.log.Info("Deletion of Prometheus: monitoring is successful!")
-	return nil
-}
-
-func (pt *prometheusTest) deletePod(namespace, podName, labelSelector string) error {
-	podList, err := pt.coreClient.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: labelSelector})
-	if err != nil {
-		pt.log.Errorf("Error while listing prometheus pods: %v", err)
-		return err
-	}
-
-	for _, pod := range podList.Items {
-		if pod.Name == podName {
-			// Delete Pod
-			err = pt.coreClient.CoreV1().Pods(namespace).Delete(podName, &metav1.DeleteOptions{})
-			if err != nil {
-				pt.log.Errorf("Error while deleting prometheus pods: %v", err)
-				return err
-			}
-		}
-	}
-
-	return nil
-
 }

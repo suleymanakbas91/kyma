@@ -980,7 +980,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/avast/retry-go",
-    "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1",
     "github.com/coreos/prometheus-operator/pkg/client/versioned",
     "github.com/ghodss/yaml",
     "github.com/go-redis/redis",
