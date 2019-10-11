@@ -6,6 +6,8 @@ metadata:
 spec:
   includedNamespaces:
   - '*'
+  excludedNamespaces:
+  - '*-backup-test'
   includedResources:
   - '*'
   includeClusterResources: true
