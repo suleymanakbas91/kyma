@@ -60,6 +60,7 @@ spec:
             {{- with .Values.global.restoreResourcePriorities }}
             - --restore-resource-priorities={{ . }}
             {{- end }}
+            - --v=9
           {{- if eq $provider "azure" }}
           envFrom:
             - secretRef:
