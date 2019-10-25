@@ -11,7 +11,7 @@ spec:
   excludedResources:
   - natsschannels.messaging.knative.dev
   - subscriptions.eventing.knative.dev
-  - channels.eventing.knative.dev
+  - channels.messaging.knative.dev
   includeClusterResources: true
   storageLocation: default
   volumeSnapshotLocations: 
